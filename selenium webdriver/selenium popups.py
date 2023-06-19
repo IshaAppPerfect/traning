@@ -16,7 +16,7 @@ obj = driver.switch_to.alert
 #Retrieve the message on the Alert window
 msg=obj.text
 print ("Alert shows following message: "+ msg )
-# setting sleep time as 2 seconds---
+# setting sleep time as 2 seconds----
 time.sleep(2)
 
 #use the accept() method to accept the alert
