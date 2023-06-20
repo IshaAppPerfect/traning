@@ -3,15 +3,18 @@ Last login: Tue Jun 20 15:14:46 on ttys001
 psql (15.3)
 Type "help" for help.
 
+//creating database---
 appperfect=# CREATE DATABASE data;
 CREATE DATABASE
 
+//connecting to database----
 appperfect=# \connect data
 You are now connected to database "data" as user "appperfect".
 
 data=# \dt;
 Did not find any relations.
 
+//creating table authors----
 data=# CREATE TABLE authors(
 data(# author_id SERIAL PRIMARY KEY, 
 data(# first_name VARCHAR(100) NOT NULL, 
@@ -19,6 +22,7 @@ data(# last_name VARCHAR(100) NOT NULL
 data(# );
 CREATE TABLE
 
+//creating table books----
 data=# CREATE TABLE books(
 data(# book_id SERIAL PRIMARY KEY, 
 data(# title VARCHAR(100) NOT NULL, 
@@ -26,13 +30,16 @@ data(# published_year INT
 data(# );
 CREATE TABLE
 
+//altering table-----
 data=# ALTER TABLE books ADD COLUMN author_id INT REFERENCES authors(author_id); 
 ALTER TABLE
+
 data=# SELECT * FROM authors;
  author_id | first_name | last_name 
 -----------+------------+-----------
 (0 rows)
 
+//list of relations made-----
 data=# \dt
            List of relations
  Schema |  Name   | Type  |   Owner    
@@ -40,6 +47,8 @@ data=# \dt
  public | authors | table | appperfect
  public | books   | table | appperfect
 (2 rows)
+
+//inserting rows in authors-----
 data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(1, 'mike','bing');
 INSERT 0 1
 data=# SELECT * FROM authors;                                                    author_id | first_name | last_name 
@@ -54,6 +63,8 @@ data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(2, 'monika',
 INSERT 0 1
 data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(3, 'mona','binasg');
 INSERT 0 1
+
+//authors table----
 data=# SELECT * FROM authors;                                                    author_id | first_name | last_name 
 -----------+------------+-----------
          1 | mike       | bing
@@ -67,6 +78,7 @@ data=# SELECT * FROM books;
 ---------+-------+----------------+-----------
 (0 rows)
 
+//inserting elements in books table----
 data=# INSERT INTO books(title, published_year, author_id) VALUES ('Gita' , 1000, 1),('desw', 1213, 2),('gvbv', '232', 3);
 INSERT 0 3
 
@@ -92,6 +104,7 @@ Indexes:
 Referenced by:
     TABLE "books" CONSTRAINT "books_author_id_fkey" FOREIGN KEY (author_id) REFERENCES authors(author_id)
 
+//alias column-----
 data=# SELECT first_name AS name FROM authors;
   name  
 --------
@@ -100,12 +113,14 @@ data=# SELECT first_name AS name FROM authors;
  mona
 (3 rows)
 
+//where clause-----
 data=# SELECT title FROM books WHERE book_id=1;
  title 
 -------
  Gita
 (1 row)
 
+//update----
 data=# UPDATE authors SET first_name='heena' WHERE author_id=2;
 UPDATE 1
 data=# SELECT * from authors;
@@ -116,7 +131,10 @@ data=# SELECT * from authors;
          2 | heena      | bing
 (3 rows)
 
+//inserting more elements-----
 data=# INSERT INTO books(title, published_year, author_id) VALUES ('dgta' , 1000, 1),('desw', 7213, 3);
+
+//books table----
 data=# SELECT * from books;
  book_id | title | published_year | author_id 
 ---------+-------+----------------+-----------
@@ -127,6 +145,7 @@ data=# SELECT * from books;
        5 | desw  |           7213 |         3
 (5 rows)
 
+//group by clause----
 data=# SELECT published_year, COUNT(title) FROM books GROUP BY published_year;
  published_year | count 
 ----------------+-------
@@ -136,6 +155,7 @@ data=# SELECT published_year, COUNT(title) FROM books GROUP BY published_year;
            1213 |     1
 (4 rows)
 
+//order by clause----
 data=# SELECT first_name FROM authors ORDER BY first_name DESC;
  first_name 
 ------------
@@ -144,6 +164,8 @@ data=# SELECT first_name FROM authors ORDER BY first_name DESC;
  heena
 (3 rows)
 
+//joins----
+//inner join----
 data=# SELECT authors.first_name , books.title FROM authors INNER JOIN books ON authors.author_id = books.author_id;
  first_name | title 
 ------------+-------
@@ -154,6 +176,7 @@ data=# SELECT authors.first_name , books.title FROM authors INNER JOIN books ON 
  mona       | desw
 (5 rows)
 
+//cross join----
 data=# SELECT authors.first_name , books.title FROM authors CROSS JOIN books;
  first_name | title 
 ------------+-------
@@ -173,6 +196,7 @@ data=# SELECT authors.first_name , books.title FROM authors CROSS JOIN books;
  mona       | desw
  heena      | desw
 
+//left outer join----
 data=# SELECT authors.first_name , books.title FROM authors LEFT OUTER JOIN books ON authors.author_id = books.author_id;
  first_name | title 
 ------------+-------
@@ -183,6 +207,7 @@ data=# SELECT authors.first_name , books.title FROM authors LEFT OUTER JOIN book
  mona       | desw
 (5 rows)
 
+//right outer join-----
 data=# SELECT authors.first_name , books.title FROM authors RIGHT OUTER JOIN books ON authors.author_id = books.author_id;
  first_name | title 
 ------------+-------
@@ -193,7 +218,7 @@ data=# SELECT authors.first_name , books.title FROM authors RIGHT OUTER JOIN boo
  mona       | desw
 (5 rows)
 
-
+//transactions---
 data=# SELECT * from books;
  book_id | title | published_year | author_id 
 ---------+-------+----------------+-----------
@@ -204,6 +229,7 @@ data=# SELECT * from books;
        5 | desw  |           7213 |         3
 (5 rows)
 
+//rollback----
 data=# Begin;
 BEGIN
 data=*# DELETE FROM books where book_id = 3;
@@ -229,6 +255,7 @@ data=# SELECT * from books;
        5 | desw  |           7213 |         3
 (5 rows)
 
+//commit----
 data=# Begin;
 BEGIN
 data=*# DELETE FROM books where book_id = 3;
@@ -255,3 +282,4 @@ data=# SELECT * from books;
        4 | dgta  |           1000 |         1
        5 | desw  |           7213 |         3
 (4 rows)
+
