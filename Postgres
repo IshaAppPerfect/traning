@@ -1,0 +1,257 @@
+Last login: Tue Jun 20 15:14:46 on ttys001
+❯ psql
+psql (15.3)
+Type "help" for help.
+
+appperfect=# CREATE DATABASE data;
+CREATE DATABASE
+
+appperfect=# \connect data
+You are now connected to database "data" as user "appperfect".
+
+data=# \dt;
+Did not find any relations.
+
+data=# CREATE TABLE authors(
+data(# author_id SERIAL PRIMARY KEY, 
+data(# first_name VARCHAR(100) NOT NULL, 
+data(# last_name VARCHAR(100) NOT NULL
+data(# );
+CREATE TABLE
+
+data=# CREATE TABLE books(
+data(# book_id SERIAL PRIMARY KEY, 
+data(# title VARCHAR(100) NOT NULL, 
+data(# published_year INT
+data(# );
+CREATE TABLE
+
+data=# ALTER TABLE books ADD COLUMN author_id INT REFERENCES authors(author_id); 
+ALTER TABLE
+data=# SELECT * FROM authors;
+ author_id | first_name | last_name 
+-----------+------------+-----------
+(0 rows)
+
+data=# \dt
+           List of relations
+ Schema |  Name   | Type  |   Owner    
+--------+---------+-------+------------
+ public | authors | table | appperfect
+ public | books   | table | appperfect
+(2 rows)
+data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(1, 'mike','bing');
+INSERT 0 1
+data=# SELECT * FROM authors;                                                    author_id | first_name | last_name 
+-----------+------------+-----------
+         1 | mike       | bing
+(1 row)
+
+data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(1, 'monika','bing');
+ERROR:  duplicate key value violates unique constraint "authors_pkey"
+DETAIL:  Key (author_id)=(1) already exists.
+data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(2, 'monika','bing');
+INSERT 0 1
+data=# INSERT INTO authors(author_id, first_name, last_name) VALUES(3, 'mona','binasg');
+INSERT 0 1
+data=# SELECT * FROM authors;                                                    author_id | first_name | last_name 
+-----------+------------+-----------
+         1 | mike       | bing
+         2 | monika     | bing
+         3 | mona       | binasg
+(3 rows)
+
+
+data=# SELECT * FROM books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+(0 rows)
+
+data=# INSERT INTO books(title, published_year, author_id) VALUES ('Gita' , 1000, 1),('desw', 1213, 2),('gvbv', '232', 3);
+INSERT 0 3
+
+LINE 2: SELECT * from books
+        ^
+data=# SELECT * from books;                                                      book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       3 | gvbv  |            232 |         3
+(3 rows)
+
+data=# \d authors
+
+                                         Table "public.authors"
+   Column   |          Type          | Collation | Nullable |                  Default                   
+------------+------------------------+-----------+----------+--------------------------------------------
+ author_id  | integer                |           | not null | nextval('authors_author_id_seq'::regclass)
+ first_name | character varying(100) |           | not null | 
+ last_name  | character varying(100) |           | not null | 
+Indexes:
+    "authors_pkey" PRIMARY KEY, btree (author_id)
+Referenced by:
+    TABLE "books" CONSTRAINT "books_author_id_fkey" FOREIGN KEY (author_id) REFERENCES authors(author_id)
+
+data=# SELECT first_name AS name FROM authors;
+  name  
+--------
+ mike
+ monika
+ mona
+(3 rows)
+
+data=# SELECT title FROM books WHERE book_id=1;
+ title 
+-------
+ Gita
+(1 row)
+
+data=# UPDATE authors SET first_name='heena' WHERE author_id=2;
+UPDATE 1
+data=# SELECT * from authors;
+ author_id | first_name | last_name 
+-----------+------------+-----------
+         1 | mike       | bing
+         3 | mona       | binasg
+         2 | heena      | bing
+(3 rows)
+
+data=# INSERT INTO books(title, published_year, author_id) VALUES ('dgta' , 1000, 1),('desw', 7213, 3);
+data=# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       3 | gvbv  |            232 |         3
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(5 rows)
+
+data=# SELECT published_year, COUNT(title) FROM books GROUP BY published_year;
+ published_year | count 
+----------------+-------
+           7213 |     1
+            232 |     1
+           1000 |     2
+           1213 |     1
+(4 rows)
+
+data=# SELECT first_name FROM authors ORDER BY first_name DESC;
+ first_name 
+------------
+ mona
+ mike
+ heena
+(3 rows)
+
+data=# SELECT authors.first_name , books.title FROM authors INNER JOIN books ON authors.author_id = books.author_id;
+ first_name | title 
+------------+-------
+ mike       | Gita
+ heena      | desw
+ mona       | gvbv
+ mike       | dgta
+ mona       | desw
+(5 rows)
+
+data=# SELECT authors.first_name , books.title FROM authors CROSS JOIN books;
+ first_name | title 
+------------+-------
+ mike       | Gita
+ mona       | Gita
+ heena      | Gita
+ mike       | desw
+ mona       | desw
+ heena      | desw
+ mike       | gvbv
+ mona       | gvbv
+ heena      | gvbv
+ mike       | dgta
+ mona       | dgta
+ heena      | dgta
+ mike       | desw
+ mona       | desw
+ heena      | desw
+
+data=# SELECT authors.first_name , books.title FROM authors LEFT OUTER JOIN books ON authors.author_id = books.author_id;
+ first_name | title 
+------------+-------
+ mike       | Gita
+ heena      | desw
+ mona       | gvbv
+ mike       | dgta
+ mona       | desw
+(5 rows)
+
+data=# SELECT authors.first_name , books.title FROM authors RIGHT OUTER JOIN books ON authors.author_id = books.author_id;
+ first_name | title 
+------------+-------
+ mike       | Gita
+ heena      | desw
+ mona       | gvbv
+ mike       | dgta
+ mona       | desw
+(5 rows)
+
+
+data=# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       3 | gvbv  |            232 |         3
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(5 rows)
+
+data=# Begin;
+BEGIN
+data=*# DELETE FROM books where book_id = 3;
+DELETE 1
+data=*# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(4 rows)
+
+data=*# ROLLBACK;
+ROLLBACK
+data=# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       3 | gvbv  |            232 |         3
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(5 rows)
+
+data=# Begin;
+BEGIN
+data=*# DELETE FROM books where book_id = 3;
+DELETE 1
+data=*# COMMIT;
+COMMIT
+data=# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(4 rows)
+
+data=# ROLLBACK;
+WARNING:  there is no transaction in progress
+ROLLBACK
+data=# SELECT * from books;
+ book_id | title | published_year | author_id 
+---------+-------+----------------+-----------
+       1 | Gita  |           1000 |         1
+       2 | desw  |           1213 |         2
+       4 | dgta  |           1000 |         1
+       5 | desw  |           7213 |         3
+(4 rows)
